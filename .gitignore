@@ -1,0 +1,123 @@
+# ============================================================
+# Python
+# ============================================================
+
+# Ambienti virtuali
+venv/
+.venv/
+env/
+
+# Cache e compilati Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build / distribuzione Python
+**/dist/
+**/build/
+*.egg-info/
+.eggs/
+
+# ============================================================
+# Flutter / Dart
+# ============================================================
+
+.dart_tool/
+**/.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+**/flutter_build/
+*.dill
+
+# ============================================================
+# Android / Gradle
+# ============================================================
+
+.gradle/
+**/.gradle/
+**/build/
+
+# File locali Android
+local.properties
+
+# ============================================================
+# IDE
+# ============================================================
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# ============================================================
+# Log e file temporanei
+# ============================================================
+
+*.log
+*.swp
+*~
+log/
+
+# ============================================================
+# File locali / configurazione
+# ============================================================
+
+.env
+.env.*
+!.env.example
+!.env.sample
+include/secrets.h
+include/LocalWifiConfig.h
+
+# Local credentials, browser captures and private keys
+*.har
+*.private.key
+*.private.pem
+private-*.key
+private-*.pem
+id_rsa
+id_ed25519
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.credentials.local
+credentials.local.*
+
+# Device backups and diagnostic captures
+*.nvs
+*.nvs.bin
+*.nvs-backup.bin
+nvs_backup*.bin
+*.flash.bin
+*.flash-backup.bin
+flash_backup*.bin
+*_flash_backup.bin
+*.memory.bin
+*.memdump
+*.coredump
+*.serial-capture.txt
+*.diagnostic-capture.txt
+
+# Private experimental archives (public source archives remain trackable)
+private_artifacts/
+private_archives/
+
+# ============================================================
+# PlatformIO
+# ============================================================
+
+.pio/
+/local_firmware/
+
+# ============================================================
+# Sistema operativo
+# ============================================================
+
+.DS_Store
+Thumbs.db
+Desktop.ini

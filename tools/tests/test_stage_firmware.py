@@ -112,15 +112,16 @@ class ArtifactStagingTests(unittest.TestCase):
         self.assertFalse(manifest["public_distribution_authorized"])
         self.assertEqual(manifest["legal_review_status"],
                          "NOT_APPROVED_FOR_PUBLIC_DISTRIBUTION")
-        self.assertEqual(len(manifest["package_files"]), 22)
+        self.assertEqual(len(manifest["package_files"]), 25)
         self.assertEqual(manifest["packaging_revision"], 3)
         self.assertEqual(manifest["board"], "nodemcuv2")
         self.assertEqual(manifest["flash_parameters"], {
             "mode": "dio", "frequency": "40m", "size": "4MB",
             "recommended_baud": 115200})
         packaged = {item["filename"] for item in manifest["package_files"]}
-        self.assertTrue({"INSTALLATION.md", "BUILDING.md", "USER_GUIDE.md",
-                         "HARDWARE.md"}.issubset(packaged))
+        self.assertTrue({"INSTALLATION.md", "BUILDING.md", "FLASHING.md",
+                         "ESP32_COMPONENT_INVENTORY.md", "LGPL_RELINKING.md",
+                         "USER_GUIDE.md", "HARDWARE.md"}.issubset(packaged))
         inventory = json.loads((first.parent / manifest["dependency_inventory_filename"]).read_text())
         self.assertEqual(inventory["resolved"]["framework"]["name"],
                          "framework-arduinoespressif8266")
@@ -131,7 +132,7 @@ class ArtifactStagingTests(unittest.TestCase):
     def test_sha256s_cover_component_and_manifest(self):
         manifest_path = self.staged()
         lines = (self.output / "SHA256SUMS").read_text().splitlines()
-        self.assertEqual(len(lines), 24)
+        self.assertEqual(len(lines), 27)
         for line in lines:
             digest, filename = line.split("  ", 1)
             self.assertEqual(digest,
@@ -202,7 +203,9 @@ class ArtifactStagingTests(unittest.TestCase):
     def test_revision_2_package_remains_valid_without_revision_3_fields(self):
         manifest_path = self.staged()
         manifest = json.loads(manifest_path.read_text())
-        removed = {"BUILDING.md", "USER_GUIDE.md", "HARDWARE.md"}
+        removed = {"BUILDING.md", "FLASHING.md",
+                   "ESP32_COMPONENT_INVENTORY.md", "LGPL_RELINKING.md",
+                   "USER_GUIDE.md", "HARDWARE.md"}
         manifest["packaging_revision"] = 2
         manifest.pop("board")
         manifest.pop("flash_parameters")

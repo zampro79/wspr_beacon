@@ -208,12 +208,12 @@ profiles or targets in one directory.
 Generated packages retain manifest schema 2 and use packaging revision 3.
 Revision 3 adds the exact compatible board and a required
 `flash_parameters` object (`mode`, `frequency`, `size` and
-`recommended_baud`). It also includes `INSTALLATION.md`, `BUILDING.md`,
-`USER_GUIDE.md` and `HARDWARE.md` at package root. The validator checks these
-fields against the selected target, verifies the local links among the bundled
-guides and rejects missing or unexpected material. Earlier revision 1 and 2
-packages remain subject to their historical rules; existing archives are not
-migrated or rewritten.
+`recommended_baud`). It also includes the installation, building, flashing,
+component-inventory, relinking, user and hardware guides at package root. The
+validator checks these fields against the selected target, verifies the local
+links among the bundled guides and rejects missing or unexpected material.
+Earlier revision 1 and 2 packages remain subject to their historical rules;
+existing archives are not migrated or rewritten.
 
 The standalone flashing recommendations recorded by revision 3 are DIO,
 40 MHz and 4 MB for both targets, with 115200 baud for ESP8266 and 460800 baud
@@ -226,6 +226,30 @@ The `--public-release` staging path is restricted to a clean
 `esp8266_public` commit and performs a controlled rebuild. It still does not
 publish a release or authorize distribution. Do not use it as a substitute for
 release approval.
+
+### ESP32 PUBLIC compliance preparation
+
+After producing and validating a local `esp32_public` package, prepare the
+separate fail-closed Phase 1 package with:
+
+```sh
+python3 tools/package_public_firmware.py \
+  --staged-package /path/to/verified-esp32-public-package \
+  --output-dir /path/to/new-empty-output
+```
+
+The tool reuses the existing package validator, verifies the four component
+offsets and bootloader flash header, generates a factory image with the
+installed esptool, checks every component at its merged offset, writes an SBOM
+from actual link-map evidence and records exact resolved PlatformIO packages.
+It always emits `COMPLIANCE_INCOMPLETE`, `release_ready: false` and
+`public_distribution_authorized: false`. The factory image is a destructive
+first-install/recovery path because its raw `0xFF` padding covers NVS.
+The preparation manifest preserves the input clean/dirty state and marks source
+correspondence verified only for a technically eligible clean package.
+
+See the [Flashing Guide](FLASHING.md), [ESP32 component inventory](ESP32_COMPONENT_INVENTORY.md)
+and [LGPL relinking notes](LGPL_RELINKING.md).
 
 ## 9. Distribution restrictions
 

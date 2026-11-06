@@ -127,6 +127,8 @@ device manually to attempt STA operation.
   provisioning, Dashboard, configuration, CLI, OLED and troubleshooting.
 - [Installation Guide](docs/INSTALLATION.md) — end-user package verification,
   Linux, macOS and Windows flashing, first boot, updates and recovery.
+- [Flashing Guide](docs/FLASHING.md) — future precompiled ESP8266/ESP32
+  installation with Espressif tools, factory images and conservative recovery.
 - [Building Guide](docs/BUILDING.md) — developer setup, four PlatformIO
   environments, tests, source uploads, outputs and local technical packaging.
 - [Hardware Guide](docs/HARDWARE.md) — pin assignments, electrical limits,

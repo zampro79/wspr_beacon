@@ -35,6 +35,9 @@ REQUIRED_PACKAGE_FILES = {
 }
 REVISION_3_DOCUMENTATION = {
     "BUILDING.md": "building",
+    "FLASHING.md": "flashing",
+    "ESP32_COMPONENT_INVENTORY.md": "component-inventory",
+    "LGPL_RELINKING.md": "relinking-guide",
     "USER_GUIDE.md": "user-guide",
     "HARDWARE.md": "hardware-guide",
 }

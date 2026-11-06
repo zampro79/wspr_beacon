@@ -138,6 +138,15 @@ device manually to attempt STA operation.
   distribution model and unresolved release obligations; see also the
   [third-party notices](THIRD_PARTY_NOTICES.md).
 
+## Reporting issues
+
+Use the [GitHub issue tracker](https://github.com/zampro79/wspr_beacon/issues)
+and include the ESP8266/ESP32 platform, DEVELOPMENT/PUBLIC profile, version or
+commit, a concise problem description, reproduction steps and sanitized logs
+when relevant. Do not publish Wi-Fi credentials, passwords, tokens, cookies,
+unsanitized HAR files, NVS backups, flash or memory dumps, private keys or
+unnecessary personal information.
+
 ## Verification status
 
 The current consolidated baseline has 559 passing tests in each native profile
@@ -158,10 +167,9 @@ interruptions. That snapshot is not continuous logging of the full interval;
 real NTP-failure recovery, physical PPS, prolonged OLED observation, complete
 protected-window browser coverage and quantitative RF validation remain open.
 
-An earlier repository used the historical label `v2.0.0-field-tested` for a
-stable 20 m FIXED baseline. That tag is not present in the current consolidated
-repository; the recorded NodeMCU observations remain historical evidence rather
-than a resolvable Git reference here.
+An earlier project recorded a stable 20 m FIXED baseline. The associated
+private-history identifier is intentionally omitted; the NodeMCU observations
+remain historical evidence rather than a resolvable Git reference here.
 
 ## License and release status
 
@@ -173,6 +181,11 @@ GitHub identifier. See [LICENSE](LICENSE) and [copyright and scope](COPYRIGHT.md
 Third-party components retain their respective licenses. GPL adoption does not
 resolve the outstanding LGPL relinking or ESP8266 NONOS SDK questions, and no
 public firmware distribution is currently authorized.
+
+Public visibility of this source repository requires separate, explicit owner
+authorization. If granted, that visibility alone would not create an official
+source release, authorize a firmware archive or package, or authorize any
+precompiled firmware binary. Those actions remain separately gated.
 
 Compliance materials are available in [Third-party notices](THIRD_PARTY_NOTICES.md),
 [historical sketch provenance](docs/LEGACY_PROVENANCE.md), [the future

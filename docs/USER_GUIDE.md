@@ -162,9 +162,8 @@ Real AP Operational TX, GPS/PPS loss behavior, the T−7 gate during real TX,
 instrumental RF-silence and RF-quality measurements and detailed heap/watchdog
 margins remain unverified. ESP32 validation of these AP-specific paths also
 remains pending.
-The stable pre-multiband baseline was recorded under the historical label
-`v2.0.0-field-tested` in the predecessor repository. That tag is not present in
-the current consolidated Git history.
+The stable pre-multiband baseline remains historical evidence from the
+predecessor project and is not a resolvable Git reference in this repository.
 
 The preliminary HTTP service accepts one local STA client at a time and normally
 closes connections before the RF-critical window. It is intentionally
@@ -542,9 +541,10 @@ While the callsign is unconfigured, the dedicated
 `OPERATING_IDENTITY_UNCONFIGURED` reason inhibits scheduler admission, message
 preparation and RF output regardless of GPS/PPS or NTP status. Entering a
 callsign only stages a candidate; the complete candidate must still pass normal
-validation and be explicitly saved/applied. The current development default
-remains `IW2NNV` with locator `JN45`; the public-release default has not yet
-been switched.
+validation and be explicitly saved/applied. DEVELOPMENT defaults to `IW2NNV`
+with locator `JN45`. PUBLIC starts with an empty callsign and locator `JN45`, so
+the user must configure and explicitly save a valid operating identity before
+TX can become eligible.
 
 Enter `config` before using `wspr set`, `wspr frequency mode`, `config save`,
 `config discard` or `config defaults`; outside configuration mode these

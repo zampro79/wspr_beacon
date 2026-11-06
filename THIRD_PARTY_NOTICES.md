@@ -69,8 +69,15 @@ the intended GPLv3 combined distribution, remain
 
 ## Release gate
 
-No public distribution is authorized. Before release, at minimum: preserve the
-project grant and all third-party notices, confirm that removed historical
-material is excluded, settle LGPL relinking materials, settle the SDK/GCC
-exception questions, and verify this inventory against the exact clean ESP8266
-release build.
+Public visibility of the source repository, an official source release,
+publication of a firmware archive/package and distribution of precompiled
+firmware are separate actions. Source-repository visibility requires explicit
+owner authorization and does not authorize any of the other three actions.
+
+No firmware package or precompiled firmware distribution is authorized. Before
+such a release, at minimum: preserve the project grant and all third-party
+notices, confirm that removed historical material is excluded, settle LGPL
+relinking materials, settle the SDK/GCC exception questions, and verify this
+inventory against the exact clean ESP8266 release build. Existing manifest
+status remains `public_distribution_authorized: false` and
+`NOT_APPROVED_FOR_PUBLIC_DISTRIBUTION`.

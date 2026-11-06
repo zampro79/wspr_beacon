@@ -36,10 +36,10 @@ and explicit save/apply controls, plus a protected request to restart in the
 existing AP Provisioning portal for Wi-Fi setup. Multiband RF hardware validation remains
 open and software selection does not replace band-appropriate filtering.
 
-The predecessor repository used the historical label
-`v2.0.0-field-tested` for its stable pre-multiband baseline. That tag is not
-present in the current consolidated repository. Functional NodeMCU and IC-705
-observations exist, but quantitative RF validation remains open.
+The predecessor project recorded a stable pre-multiband baseline. Its private
+history identifier is intentionally omitted and is not present in this
+repository. Functional NodeMCU and IC-705 observations exist, but quantitative
+RF validation remains open.
 
 PlatformIO provides explicit DEVELOPMENT and PUBLIC build environments for
 ESP8266, ESP32 and native verification. Exactly one profile is selected at
@@ -422,9 +422,9 @@ superseded**.
 The original Arduino `.ino` sketches were historical reference material, not
 an alternative active firmware. They were excluded from the consolidated tree
 after their provenance was recorded and are not recoverable from this
-repository's current Git history. The early baseline identifier `365670f` and
-its “no tests/no hardware validation” findings refer to the predecessor
-repository and are likewise historical.
+repository's current Git history. Early “no tests/no hardware validation”
+findings belong to that predecessor baseline and are likewise historical; its
+private Git identifier is intentionally omitted.
 
 ## 8. Open work and roadmap
 

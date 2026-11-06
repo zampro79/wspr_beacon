@@ -228,9 +228,10 @@ printed by status interfaces.
 ### ESP8266 AP Setup hardware check
 
 The controlled check of **Enter Wi-Fi Setup Mode** passed on a NodeMCU ESP8266EX
-with 4 MB flash and CP2102 USB-UART, running DEVELOPMENT firmware from commit
-`606e63cd4b5882388c6aa36435072dcc1643e669`. The RF chain was physically
-isolated from antenna and amplifiers; no instrumental RF measurements were made.
+with 4 MB flash and CP2102 USB-UART, running the reviewed DEVELOPMENT firmware
+baseline current for that test. The private predecessor commit identifier is
+intentionally omitted. The RF chain was physically isolated from antenna and
+amplifiers; no instrumental RF measurements were made.
 
 The firmware upload succeeded. On boot, the device joined the previously saved
 STA network and served the Configuration page with the new button. The tester

@@ -108,7 +108,7 @@ architecture and [the User Guide](docs/USER_GUIDE.md) for operation.
 - Deterministic identity/gzip asset checks and both 521/521 native profile
   suites pass. All four ESP8266/ESP32 DEVELOPMENT/PUBLIC builds pass; RAM is
   unchanged and flash increases by 576 bytes in each environment relative to
-  commit `665b34530515d5908a1830c64317f20c48d38c47`. The ESP8266 DEVELOPMENT
+  the preceding reviewed HTTP-diagnostics baseline. The ESP8266 DEVELOPMENT
   image uploads successfully to the identified NodeMCU without erasing saved
   configuration; the device restarts in STA mode and serves Dashboard/status
   with the prior valid operating identity. Subsequent manual Firefox checks
@@ -239,9 +239,9 @@ architecture and [the User Guide](docs/USER_GUIDE.md) for operation.
 
 ## Current Project Status
 
-- The historical DOC-001C.2 checkpoint was recorded as `7f5cf3d` in the
-  predecessor repository; that commit is not present in the consolidated Git
-  history. Use Git HEAD for the current baseline.
+- The historical DOC-001C.2 checkpoint belongs to the predecessor repository
+  and is not present in the consolidated Git history. Its private identifier is
+  intentionally omitted; use Git HEAD for the current baseline.
 - ESP8266 NodeMCU and ESP32 are primary development platforms sharing one core.
   ESP8266 has prior hardware evidence and is the planned first binary-release target;
   ESP32 remains software-verified with hardware validation pending.
@@ -293,10 +293,9 @@ Statuses: `TODO`, `IN ANALYSIS`, `IN DEVELOPMENT`, `IN REVIEW`, `COMPLETED`,
 `PARTIAL`, `SUPERSEDED`, `BLOCKED`. Priorities: P0 essential, P1 first complete
 release, P2 later. Compilation alone never completes a task.
 
-Short commit hashes and tags recorded in historical task entries may refer to
-the predecessor repository and are archival identifiers only. Unless the object
-is present in the current repository, they must not be treated as resolvable Git
-references.
+Private predecessor commit hashes and tags are intentionally omitted from this
+public-facing ledger. Historical comparisons retain their task context and
+measured deltas without presenting non-resolvable Git references.
 
 ## Documentation
 
@@ -306,12 +305,14 @@ and established mandatory operational-documentation maintenance in AGENTS.
 
 ### DOC-001B — English User Guide [P1 · COMPLETED]
 Created `docs/USER_GUIDE.md`, redirected `USER_MANUAL.md`, and verified CLI,
-OLED/RF behavior, links and whitespace. Consolidated at `a00097e`.
+OLED/RF behavior, links and whitespace. The predecessor checkpoint identifier
+is intentionally omitted.
 
 ### DOC-001C.1 — English technical documentation alignment [P1 · COMPLETED]
 Aligned README, PROJECT and HARDWARE in English, separated current behavior
-from superseded decisions, and verified links. The predecessor-repository
-checkpoint was recorded as `7f5cf3d`; it is not in the current Git history.
+from superseded decisions, and verified links. The predecessor checkpoint is
+not in the current Git history and its private identifier is intentionally
+omitted.
 
 ### DOC-001C.2 — English development instructions and task history [P1 · COMPLETED]
 Translate and align AGENTS/TASKS without changing development policy, losing
@@ -354,7 +355,8 @@ ESP8266/+364 B ESP32. NodeMCU interaction passed; no persistent write or RF test
 
 ### CONSOLE-004A — Readable serial monitor [P1 · COMPLETED]
 Added aligned sections and flash-based ESP8266 formatting without snapshot
-changes. Evidence: 216 tests; both builds. Versus `00b47ba`: ESP8266 +20 B RAM,
+changes. Evidence: 216 tests; both builds. Versus the preceding console
+baseline: ESP8266 +20 B RAM,
 +9,068 B flash (34,520/352,763 B); ESP32 RAM unchanged, +3,064 B flash
 (48,748/844,785 B). Optimized NodeMCU reports, monitor control and post-TX
 recovery verified; no persistent change or manual TX.
@@ -422,7 +424,7 @@ frequency, level, transient and early-emission measurements remain open.
 
 ### RF-BAND-002A — BandPlan and multiband validation [P1 · COMPLETED]
 Defined seven bands and four-tone validation; only 20 m TX-enabled. Evidence:
-199 tests/both builds; versus `47c3112`, ESP8266 +128 B RAM/+408 B flash,
+199 tests/both builds; versus the preceding band-plan baseline, ESP8266 +128 B RAM/+408 B flash,
 ESP32 RAM unchanged/+488 B. WSPR v1 remained unchanged; hardware check pending.
 
 ### RF-BAND-002B — Pseudorandom WSPR frequency [P1 · COMPLETED]
@@ -437,12 +439,14 @@ both builds; ESP8266 34,500/342,687 B, ESP32 48,748/840,665 B; no hardware test.
 
 ### RF-BAND-002D.1 — Unified band/mode configuration [P1 · COMPLETED]
 Made SAVED/CANDIDATE/ACTIVE the shared model while v1 still could not persist
-band/mode. Evidence: 210 tests/both builds; versus `99da6d7`, RAM unchanged,
+band/mode. Evidence: 210 tests/both builds; versus the preceding configuration
+baseline, RAM unchanged,
 flash +924 B ESP8266/+960 B ESP32; no upload.
 
 ### RF-BAND-002D.2 — WSPR v2 persistence [P1 · COMPLETED]
 Added band/mode in the unchanged 22-byte payload/40-byte record, v1 reading and
-explicit migration. Evidence: 213 tests/both builds; versus `b794160`, RAM
+explicit migration. Evidence: 213 tests/both builds; versus the preceding
+persistence baseline, RAM
 unchanged, flash +84 B ESP8266/+96 B ESP32. Native tests verified v1→v2;
 NodeMCU verified DEFAULT→v2, RANDOM/FIXED saves and reboots while preserving
 WSPR/Wi-Fi. No extra persistent writes followed.
@@ -453,7 +457,8 @@ keeps 20 m as the default, resets a changed band's candidate base atomically to
 its nominal frequency, makes legacy validation and RANDOM band-aware, and
 retains the WSPR v2 22-byte payload/40-byte record. Hardware upload, RF output,
 filter validation and regulatory authorization are outside this task. Evidence:
-397/397 native tests and ESP8266/ESP32 builds passed. Versus `19b5278`, ESP8266
+397/397 native tests and ESP8266/ESP32 builds passed. Versus the preceding
+multiband baseline, ESP8266
 uses 41,096 B RAM and 451,579 B flash (−4/+808 B), while ESP32 uses 52,524 B
 RAM and 952,449 B flash (+0/+872 B). The deterministic Configuration gzip asset
 is 8,726 B for a 30,966 B source. No hardware upload or RF test was performed.
@@ -510,7 +515,7 @@ onboard D0/GPIO16 LED for qualified time authority: off without authority,
 slow blink for NTP, steady for GPS/PPS, shared Hardware Check flashes, and no
 GPIO transitions during `PREPARING`/TX. Other platforms retain one status LED.
 Evidence: 225/225 native tests and both platform builds passed; ESP8266 uses
-34,528 B RAM and 353,227 B flash (+8/+432 B versus `e55971c`), while ESP32 is
+34,528 B RAM and 353,227 B flash (+8/+432 B versus the preceding LED baseline), while ESP32 is
 unchanged at 48,748/844,817 B. Physical verification of both onboard LEDs on
 the NodeMCU passed.
 
@@ -1121,7 +1126,7 @@ operational Wi-Fi scan/editor/save routes have been removed; provisioning
 retains its manual scan, OPEN/PROTECTED input and verified Wi-Fi A/B save.
 Factory Reset has precedence over AP Setup. Software validation covers both
 ESP8266 and ESP32 profiles. A NodeMCU ESP8266EX (4 MB flash, CP2102) running
-DEVELOPMENT commit `606e63cd4b5882388c6aa36435072dcc1643e669` passed the
+the reviewed DEVELOPMENT baseline current for that test passed the
 controlled AP Setup path: saved-credential STA, Configuration page and session,
 confirmed button request, reboot into AP Provisioning, portal access, and
 return to the original STA network after manual RST without changing credentials.
@@ -1433,7 +1438,8 @@ calls the transmitter update path and cannot select or prepare a frame.
 WEB-004B.2 TX enablement is not implemented or authorized in this phase.
 Software evidence: 412/412 native tests and both ESP8266/ESP32 builds passed.
 ESP8266 uses 42,064 B RAM and 469,727 B flash (+208/+3,072 B versus
-`c26c103`); ESP32 uses 52,652 B RAM and 971,757 B flash (+0/+3,084 B).
+the preceding AP baseline); ESP32 uses 52,652 B RAM and 971,757 B flash
+(+0/+3,084 B).
 Provisioning is 6,493 B identity / 2,579 B deterministic gzip; Dashboard is
 15,673 B / 5,397 B. No upload, hardware action, persistent write or RF test was
 performed.
@@ -1449,8 +1455,9 @@ the normal T−7/PREPARING/TX HTTP policy uses the active AP as network presence
 Dashboard, OLED and serial diagnostics remain available outside RF-critical
 windows. Evidence: 414/414 native tests and successful ESP8266/ESP32 builds.
 ESP8266 uses 42,080 B RAM and 470,019 B flash (+16/+292 B versus WEB-004B.1;
-+224/+3,364 B versus `c26c103`). ESP32 uses 52,652 B RAM and 972,061 B flash
-(+0/+304 B versus WEB-004B.1; +0/+3,388 B versus `c26c103`). Deterministic gzip
++224/+3,364 B versus the preceding AP baseline). ESP32 uses 52,652 B RAM and
+972,061 B flash (+0/+304 B versus WEB-004B.1; +0/+3,388 B versus the preceding
+AP baseline). Deterministic gzip
 verification passed. Hardware RF behavior remains unverified and no upload,
 persistence action or RF test is part of this phase.
 
@@ -1474,7 +1481,8 @@ The adapter propagates `PRECISE` to `COARSE` without refreshing the reference,
 so existing NTP selection and scheduler authorization remain fail-closed.
 Evidence: 543/543 native and native_public tests passed; both ESP8266 and both
 ESP32 profiles built successfully.
-Versus `e363b249`, ESP8266 DEVELOPMENT/PUBLIC use +16 B RAM and +576 B flash;
+Versus the preceding PPS baseline, ESP8266 DEVELOPMENT/PUBLIC use +16 B RAM and
++576 B flash;
 ESP32 DEVELOPMENT uses +16 B/+616 B and PUBLIC +16 B/+620 B. No upload or
 physical PPS timing/signal-integrity measurement was performed.
 

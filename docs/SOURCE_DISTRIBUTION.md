@@ -1,9 +1,15 @@
 # Future corresponding-source distribution model
 
 No official source archive or firmware release exists today. This document is
-a checklist for a future ESP8266-only release, not an authorization to publish.
-Original modern project material is licensed under GPL-3.0-or-later; this does
-not by itself clear third-party binary redistribution.
+a checklist for a future ESP8266-only release, not an authorization to publish
+one. Public visibility of the source repository requires separate, explicit
+owner authorization. If granted, repository visibility alone would not create
+an official source release, authorize a firmware archive/package or authorize
+distribution of precompiled firmware. Original modern project material is
+licensed under GPL-3.0-or-later; this does not by itself clear third-party
+binary redistribution. Existing package status remains
+`public_distribution_authorized: false` and
+`NOT_APPROVED_FOR_PUBLIC_DISTRIBUTION`.
 
 ## Binary-to-source identity
 

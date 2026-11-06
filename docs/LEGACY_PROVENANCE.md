@@ -3,9 +3,9 @@
 The five root-level Arduino sketches predated the active PlatformIO firmware.
 They were excluded from the consolidated source tree by LEGACY-001 after this
 provenance record was prepared. They were not compiled by the ESP8266 or ESP32
-environments. Their former object identifiers are retained below as provenance
-notes, but the predecessor Git objects are not present or recoverable from the
-current repository history.
+environments. Private predecessor commit and blob identifiers are intentionally
+omitted from this public-facing record and are not present or recoverable from
+the current repository history.
 
 | File | Existing attribution or notice | Known relationship to current firmware | Unresolved issue |
 | --- | --- | --- | --- |
@@ -15,22 +15,11 @@ current repository history.
 | `display.ino` | No autonomous license notice found | Historical display experiment | Author and license provenance are unconfirmed |
 | `gps.ino` | Contains external reference URLs but no autonomous license notice | Historical GPS experiment | URLs are contextual evidence, not a license grant |
 
-In the predecessor repository all five files were recorded together in commit
-`36edfc7fd0cb0bc847182190aa603d86f8282865`. That commit and the historical
-blobs listed below are not present in the current consolidated repository:
-
-| File | Blob in the pre-removal tree |
-| --- | --- |
-| `wspr_5.ino` | `d978e3780432e4e53915228903cfccf7c4e4519d` |
-| `FrequencySelection.ino` | `96987029e33aafa76bbb6944d99a6eaa95e6ea61` |
-| `Wifi_utility.ino` | `430fc56ee7463cd7599eb8796d07ceadf0708d8b` |
-| `display.ino` | `7b6879ab1b3b4158f25d97d459ef708aa413851c` |
-| `gps.ino` | `1b1cf416ba609794a99bde15adb4f5362c085f32` |
-
-In a checkout that still contains the predecessor history, a file could be
-inspected without restoring it using `git show 36edfc7:<filename>`. This command
-does not work in the current repository. The archived identifiers document the
-former import, not ownership or redistribution rights.
+All five files were recorded together in the predecessor history before their
+exclusion. Their exact private object identifiers are not required to interpret
+this public inventory and would not establish ownership or redistribution
+rights. Maintainers should retain the corresponding private provenance evidence
+separately; it is not a dependency or a resolvable reference of this repository.
 
 An apparently related public sketch family exists at
 <https://sites.google.com/site/ik1lbw/home/sketch-wspr-per-3-tx>. No exact

@@ -1,6 +1,7 @@
 # LGPL relinking materials
 
-Status: Phase 1 feasibility evidence; not yet an autonomous distribution kit.
+Status: Phase 2 autonomous local kit technically verified; legal/package review
+still required before distribution.
 
 ESP8266 and ESP32 firmware are statically linked. Recipients must have a
 practical way to replace LGPL-covered code and produce a new firmware image.
@@ -45,23 +46,49 @@ retained as a repository artifact.
 No modification may be made to the installed global framework or repository.
 Use an isolated PlatformIO package directory or disposable host environment.
 
-## Candidate relink-kit contents
+## Phase 2 local relink kit
+
+`tools/create_esp32_relink_kit.py` creates a path-independent local kit from the
+verified `esp32_public` build and a verbose build log. The kit contains:
 
 - exact WSPR Beacon source and source commit;
-- exact LGPL library/framework source and any patches;
+- exact Arduino core and board-variant LGPL source from the official 2.0.17
+  source archive (commit `5e19e086c43d0fa5e5a596497ff8f11a0a43f6c2`);
 - unstripped project and non-LGPL application objects;
-- permitted static archives required by the final link;
-- linker scripts, response files, map and exact link command;
+- project/direct-library static archives and `libFrameworkArduino.a`; ESP-IDF
+  SDK archives remain an explicitly declared framework-package prerequisite;
+- corresponding source for the four linked Arduino libraries and all five
+  direct Etherkit/Adafruit archives included in the kit;
+- the exact link command, with linker scripts supplied by the pinned framework
+  package declared as a prerequisite;
 - compilation definitions and board configuration;
 - exact PlatformIO, platform, framework and toolchain identifiers;
 - conversion commands from ELF to target BINs;
 - license texts and notices;
-- a verifier that checks input hashes and proves project objects were reused.
+- a manifest that checks every included input and LGPL source hash.
 
-ESP-IDF or binary archives must not be copied into a public kit until their
-redistribution terms are classified. Consequently, the Phase 1 package carries
-link-map/ELF evidence and this procedure but marks the kit
-`FEASIBILITY_EVIDENCE_ONLY_NOT_AUTONOMOUS`.
+The generated command file has placeholders for the kit, framework, toolchain,
+package root, Python and esptool paths and contains no private host path. The
+declared prerequisites are PlatformIO espressif32 7.1.3, the exact resolved
+Arduino package, Xtensa toolchain 8.4.0+2021r2-patch5 and esptool 4.11.0. The
+official Arduino 2.0.17 source archive SHA-256 is
+`fb4024408494d6c45701dc8e1c595f84af543e66e06b00a21435a632d577fa61`.
+
+On 2026-11-06 a fresh kit was copied to a separate `/tmp` tree with isolated
+copies of the declared framework, toolchain and esptool dependencies. A `nop`
+marker was added to `esp32-hal-misc.c::__yield()`, only that core object was
+compiled and replaced in `libFrameworkArduino.a`, and the kit's direct link and
+`elf2image` commands were run. All 79 project `src/*.o` hashes remained
+unchanged, the Arduino archive changed, and esptool accepted the resulting
+1,017,760-byte image with a valid checksum and validation hash. This was a
+relink, not a full project rebuild.
+
+The local test does not authorize publication. Phase 2 closure resolved
+`libesp_diagnostics.a` provenance and produced a complete technical license
+inventory for all 65 incorporated archives. Legal review of the combined
+GPL/LGPL/Apache/runtime distribution model is still required. Packages
+therefore remain `COMPLIANCE_INCOMPLETE`, `release_ready: false` and not
+authorized for public distribution.
 
 ## Acceptance test for a future autonomous kit
 

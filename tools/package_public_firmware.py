@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 import verify_firmware_package
+from esp32_archive_licenses import ARCHIVE_LICENSES as ESP32_ARCHIVE_LICENSES
 
 
 STATUS = "COMPLIANCE_INCOMPLETE"
@@ -45,10 +46,6 @@ ARCHIVE_LICENSES = {
     "libnewlib.a": ("BSD-family", "newlib; exact notices must be retained"),
     "libnvs_flash.a": ("Apache-2.0", "ESP-IDF NVS component"),
 }
-UNRESOLVED_ARCHIVES = {
-    "libbt.a", "libcoexist.a", "libesp_phy.a", "libesp_wifi.a",
-    "libnet80211.a", "libpp.a", "libsmartconfig.a",
-}
 ARDUINO_FRAMEWORK_ARCHIVES = {
     "libPreferences.a", "libSPI.a", "libWiFi.a", "libWire.a",
 }
@@ -69,6 +66,25 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: source.read(65536), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def safe_material_path(root: Path, relative: str) -> Path:
+    if not isinstance(relative, str) or not relative or "\\" in relative:
+        raise PackagingError("invalid package material path")
+    value = Path(relative)
+    if value.is_absolute() or any(part in ("", ".", "..") for part in value.parts):
+        raise PackagingError("invalid package material path")
+    path = root / value
+    current = root
+    for part in value.parts:
+        current /= part
+        if current.is_symlink():
+            raise PackagingError("symlinked package material path")
+    try:
+        path.resolve().relative_to(root.resolve())
+    except ValueError as error:
+        raise PackagingError("package material escapes its root") from error
+    return path
 
 
 def safe_output(output: Path) -> None:
@@ -194,13 +210,16 @@ def build_sbom(package: Path, manifest: dict) -> dict:
         name = archive_name(item.get("archive", ""))
         if not name:
             continue
-        if name in ARCHIVE_LICENSES:
+        if name in ESP32_ARCHIVE_LICENSES:
+            classification = ESP32_ARCHIVE_LICENSES[name]
+            license_id = classification["license"]
+            provenance = classification["origin"]
+            status = classification["status"]
+            if status.startswith("UNRESOLVED"):
+                unresolved.add(name)
+        elif name in ARCHIVE_LICENSES:
             license_id, provenance = ARCHIVE_LICENSES[name]
             status = "VERIFIED_COMPONENT_CLASS"
-        elif name in UNRESOLVED_ARCHIVES:
-            license_id, provenance = "NOASSERTION", "exact binary-blob terms pending"
-            status = "UNRESOLVED"
-            unresolved.add(name)
         elif name.startswith("libFrameworkArduino") or name in ARDUINO_FRAMEWORK_ARCHIVES:
             license_id, provenance = "LGPL-2.1-or-later", "Arduino ESP32 core"
             status = "RELINK_REQUIRED"
@@ -218,11 +237,15 @@ def build_sbom(package: Path, manifest: dict) -> dict:
             license_id, provenance = "NOASSERTION", "component-specific review pending"
             status = "UNRESOLVED"
             unresolved.add(name)
-        components.append({
+        component = {
             "name": name, "archive": item["archive"], "license": license_id,
             "provenance": provenance, "inclusion_evidence": item.get("evidence"),
             "status": status,
-        })
+        }
+        if name in ESP32_ARCHIVE_LICENSES:
+            component.update({key: value for key, value in classification.items()
+                              if key not in ("license", "origin", "status")})
+        components.append(component)
     return {
         "schema": 1,
         "status": STATUS if unresolved else "REVIEW_REQUIRED",
@@ -239,7 +262,15 @@ def scan_output(root: Path) -> None:
     for path in root.rglob("*"):
         if path.is_symlink():
             raise PackagingError("symlinks are not allowed in output")
-        if not path.is_file() or path.name.endswith((".bin", ".elf", ".gz")):
+        if not path.is_file() or path.name.endswith(
+                (".bin", ".elf", ".gz", ".o", ".a")):
+            continue
+        relative_parts = path.relative_to(root).parts
+        if "lgpl-relink-kit" in relative_parts and \
+                ("corresponding-source" in relative_parts or
+                 "lgpl-source" in relative_parts):
+            # Pinned third-party source legitimately contains API words such as
+            # token/password. Its provenance and hashes are checked separately.
             continue
         if SENSITIVE.search(path.read_bytes()):
             raise PackagingError(f"sensitive or local data in output: {path.name}")
@@ -253,8 +284,97 @@ def checksums(root: Path) -> None:
     (root / "SHA256SUMS").write_text("\n".join(entries) + "\n", encoding="ascii")
 
 
+def validate_relink_kit(kit: Path) -> dict:
+    manifest_path = kit / "relink-manifest.json"
+    commands_path = kit / "commands.json"
+    if not manifest_path.is_file() or not commands_path.is_file():
+        raise PackagingError("incomplete LGPL relink kit")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("environment") != "esp32_public" or \
+            manifest.get("application_objects_must_remain_unchanged") is not True or \
+            manifest.get("public_distribution_authorized") is not False or \
+            manifest.get("release_ready") is not False:
+        raise PackagingError("invalid LGPL relink kit policy or environment")
+    provenance = manifest.get("provenance", {})
+    if not re.fullmatch(r"[0-9a-f]{40}", provenance.get("source_commit", "")) or \
+            not re.fullmatch(r"[0-9a-f]{64}",
+                             provenance.get("staged_firmware_sha256", "")):
+        raise PackagingError("invalid LGPL relink provenance")
+    lists = (manifest.get("inputs"), manifest.get("lgpl_source_files"),
+             manifest.get("direct_library_source_files"))
+    if any(not isinstance(items, list) or not items for items in lists):
+        raise PackagingError("LGPL relink kit material list is empty")
+    for item in sum(lists, []):
+        relative = item.get("path", "")
+        path = safe_material_path(kit, relative)
+        if not path.is_file() or \
+                sha256_file(path) != item.get("sha256"):
+            raise PackagingError(f"LGPL relink kit input mismatch: {relative}")
+    corresponding = manifest.get("corresponding_source", {})
+    source_name = corresponding.get("filename", "")
+    source_path = kit / source_name
+    if not source_name or Path(source_name).name != source_name or \
+            source_path.is_symlink() or not source_path.is_file() or \
+            sha256_file(source_path) != corresponding.get("sha256"):
+        raise PackagingError("LGPL relink corresponding source mismatch")
+    dependencies = manifest.get("dependencies", {})
+    if not all(dependencies.get(key) for key in
+               ("framework", "toolchain", "platform", "esptool",
+                "direct_libraries")):
+        raise PackagingError("LGPL relink dependency provenance missing")
+    commands = json.loads(commands_path.read_text(encoding="utf-8"))
+    required = {"compile_modified_lgpl_object", "replace_lgpl_archive_member",
+                "index_lgpl_archive", "link", "elf2image"}
+    if set(commands) != required or "/home/" in commands_path.read_text(encoding="utf-8"):
+        raise PackagingError("invalid LGPL relink commands")
+    return manifest
+
+
+def validate_license_bundle(bundle: Path, sbom: dict) -> dict:
+    index_path = bundle / "license-bundle.json"
+    if not index_path.is_file() or index_path.is_symlink():
+        raise PackagingError("license bundle index missing")
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    if index.get("schema") != 1 or index.get("complete") is not True or \
+            index.get("legal_clearance_claim") is not False or \
+            index.get("source_commit") != sbom.get("source_commit"):
+        raise PackagingError("license bundle is not marked complete")
+    components = index.get("components", [])
+    expected = {item["name"]: item for item in sbom["components"]}
+    if index.get("archive_count") != len(expected):
+        raise PackagingError("license bundle archive count mismatch")
+    actual = {item.get("name"): item for item in components}
+    if len(actual) != len(components) or set(actual) != set(expected):
+        raise PackagingError("license bundle component coverage mismatch")
+    for name, component in actual.items():
+        if component.get("archive") != expected[name]["archive"] or \
+                component.get("license") != expected[name]["license"] or \
+                component.get("inclusion_evidence") != expected[name]["inclusion_evidence"] or \
+                not all(component.get(field) for field in
+                        ("package", "version", "license_source",
+                         "copyright_notice", "redistribution_conditions")):
+            raise PackagingError(f"license bundle metadata mismatch: {name}")
+        texts = component.get("license_texts")
+        if not isinstance(texts, list) or not texts:
+            raise PackagingError(f"license bundle text missing: {name}")
+        for item in texts:
+            relative = item.get("path", "")
+            path = safe_material_path(bundle, relative)
+            if not relative.startswith("texts/") or \
+                    not path.is_file() or sha256_file(path) != item.get("sha256"):
+                raise PackagingError(f"license bundle text mismatch: {name}")
+    for path in bundle.rglob("*"):
+        if path.is_symlink():
+            raise PackagingError("license bundle contains a symlink")
+        if path.is_file() and path != index_path and \
+                (path.parent != bundle / "texts" or path.suffix != ".txt"):
+            raise PackagingError("license bundle contains an unexpected file")
+    return index
+
+
 def package(staged: Path, output: Path, repo: Path,
-            esptool: Path | None = None) -> Path:
+            esptool: Path | None = None, relink_kit: Path | None = None,
+            license_bundle: Path | None = None) -> Path:
     safe_output(output)
     manifest = validate_base_package(staged)
     manifest["source_commit"] = full_source_commit(repo, manifest["source_commit"])
@@ -270,6 +390,10 @@ def package(staged: Path, output: Path, repo: Path,
         for directory in (firmware_dir, evidence_dir, compliance_dir, docs_dir,
                           source_dir):
             directory.mkdir()
+        relink_manifest = None
+        if relink_kit is not None:
+            relink_manifest = validate_relink_kit(relink_kit)
+            shutil.copytree(relink_kit, compliance_dir / "lgpl-relink-kit")
         for kind, source in manifest.pop("_component_files").items():
             copy_required(source, firmware_dir / kind)
         factory = create_factory(
@@ -306,6 +430,10 @@ def package(staged: Path, output: Path, repo: Path,
             source = repo / "docs" / name
             copy_required(source, docs_dir / name)
         sbom = build_sbom(staged, manifest)
+        license_index = None
+        if license_bundle is not None:
+            license_index = validate_license_bundle(license_bundle, sbom)
+            shutil.copytree(license_bundle, compliance_dir / "license-bundle")
         (compliance_dir / "esp32-sbom.json").write_text(
             json.dumps(sbom, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         provenance = {
@@ -339,7 +467,13 @@ def package(staged: Path, output: Path, repo: Path,
             "release_ready": False,
             "public_distribution_authorized": False,
             "legal_review_status": "NOT_APPROVED_FOR_PUBLIC_DISTRIBUTION",
-            "lgpl_relink_kit": "FEASIBILITY_EVIDENCE_ONLY_NOT_AUTONOMOUS",
+            "lgpl_relink_kit": (
+                "AUTONOMOUS_MATERIALS_INCLUDED_REVIEW_REQUIRED"
+                if relink_manifest is not None else
+                "FEASIBILITY_EVIDENCE_ONLY_NOT_AUTONOMOUS"),
+            "license_bundle": (
+                "COMPLETE_TECHNICAL_INVENTORY_LEGAL_REVIEW_REQUIRED"
+                if license_index is not None else "INCOMPLETE"),
         }
         (temporary / "preparation-manifest.json").write_text(
             json.dumps(provenance, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -359,11 +493,15 @@ def main() -> int:
     parser.add_argument("--staged-package", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--esptool", type=Path)
+    parser.add_argument("--relink-kit", type=Path)
+    parser.add_argument("--license-bundle", type=Path)
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[1]
     try:
         result = package(args.staged_package.resolve(), args.output_dir.resolve(),
-                         repo, args.esptool.resolve() if args.esptool else None)
+                         repo, args.esptool.resolve() if args.esptool else None,
+                         args.relink_kit.resolve() if args.relink_kit else None,
+                         args.license_bundle.resolve() if args.license_bundle else None)
     except (PackagingError, OSError, ValueError, json.JSONDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

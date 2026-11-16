@@ -49,8 +49,8 @@ Close serial monitors and other programs that hold the port.
 
 ## 3. Windows: Espressif Flash Download Tool
 
-Download Flash Download Tool from the official
-[Espressif test-tools documentation](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/index.html).
+Follow the official
+[Espressif Flash Download Tool User Guide](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html).
 The names below follow the current official guide; older releases may present a
 different launcher.
 

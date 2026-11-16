@@ -52,24 +52,29 @@ a frame or bypasses those conditions.
 
 ## Quick start from source
 
-Install Python and PlatformIO, clone this repository, and build an explicit
-environment. See the [Building Guide](docs/BUILDING.md) for prerequisites,
-upload, outputs and technical packaging.
+This repository contains source code and does not distribute precompiled
+firmware. The recommended build path is Visual Studio Code with the official
+PlatformIO IDE extension; its built-in PlatformIO Core does not require a
+separate CLI installation. Open the downloaded repository folder containing
+`platformio.ini`, then follow the numbered [Building Guide](docs/BUILDING.md).
+
+Community source builds should select one explicit PUBLIC environment:
 
 ```sh
-pio run -e esp8266
-pio run -e esp32
 pio run -e esp8266_public
 pio run -e esp32_public
-pio test -e native
-pio test -e native_public
 ```
 
-`esp8266` and `esp32` are DEVELOPMENT environments. The `_public` environments
-use safe unconfigured operating-identity defaults; they do not erase or override
-valid saved settings. An unqualified `pio run` builds ESP8266 DEVELOPMENT as a
-build-system default, not as a statement of platform priority. Nano Every remains
-historical/frozen.
+These commands are the optional advanced CLI equivalent of the per-environment
+VS Code tasks. The `_public` environments use safe unconfigured
+operating-identity defaults; they do not erase or override valid saved settings.
+PUBLIC is a firmware profile, not authorization to distribute a compiled binary.
+
+Developers may also build the `esp8266` and `esp32` DEVELOPMENT environments and
+run the `native` / `native_public` test environments. DEVELOPMENT retains the
+project-specific `IW2NNV`/`JN45` defaults. An unqualified `pio run` builds
+ESP8266 DEVELOPMENT, so always verify the selected environment before building.
+Nano Every remains historical/frozen.
 
 Every firmware reports the project, development version (`dev`), selected
 profile, target and source commit (or `unknown`). After an explicit build,

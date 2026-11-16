@@ -22,49 +22,155 @@ and `JN45`, keeping TX inhibited until a valid identity is explicitly saved.
 Existing valid SAVED configuration takes precedence over either build default.
 PUBLIC is a firmware profile, not permission to distribute a binary.
 
-## 2. Development tools
+## 2. Recommended path: VS Code and PlatformIO IDE
 
-Required:
+This is the recommended path for users who do not normally use PlatformIO.
+Visual Studio Code and PlatformIO IDE are available for Linux, Windows and
+macOS. PlatformIO IDE manages its own PlatformIO Core and normally uses its
+built-in Python, so do **not** install a second standalone Core merely to follow
+this procedure. Git is needed only for the clone method below. A USB cable,
+USB-to-UART driver and serial permissions are needed for upload, not for a
+source-only build.
 
-- Git;
-- Python 3;
-- PlatformIO Core, which provides `pio`;
-- a data-capable USB cable for upload;
-- a suitable USB-to-UART driver when the operating system does not already
-  provide one.
+1. Install [Visual Studio Code](https://code.visualstudio.com/Download).
+2. In VS Code Extensions, install the official
+   [PlatformIO IDE](https://marketplace.visualstudio.com/items?itemName=platformio.platformio-ide)
+   extension. On Linux, make sure the distribution's Python 3 virtual-environment
+   support is installed (`python3-venv` or the distribution's equivalent). Do
+   not use `sudo` to build the project.
+3. Obtain the source using either **Git clone** or **Download ZIP** as described
+   in section 3.
+4. Extract the ZIP if applicable. In VS Code choose **File → Open Folder** and
+   open the `wspr_beacon` folder that directly contains `platformio.ini`. Do not
+   create a new PlatformIO project and do not open only `src/` or its parent.
+5. Wait for PlatformIO to initialize the project and download the pinned
+   platform, framework, toolchain and library dependencies. This first operation
+   requires network access and can take several minutes.
+6. Open the PlatformIO view (ant icon) and expand **Project Tasks**.
+7. Expand exactly one community profile: `esp8266_public` for NodeMCU ESP8266,
+   or `esp32_public` for the classic ESP32 Dev Module.
+8. Under that environment select **General → Build**. Do not use a generic Build
+   button until the PlatformIO environment switcher visibly shows the intended
+   `_public` environment: the project default is `esp8266` DEVELOPMENT.
+9. Wait for the terminal to report `SUCCESS`. The RAM and Flash percentages are
+   capacity summaries for the selected target; a successful build is not a
+   hardware or RF test.
+10. Find the application binary relative to the project folder:
 
-### VS Code
+    ```text
+    .pio/build/esp8266_public/firmware.bin
+    .pio/build/esp32_public/firmware.bin
+    ```
 
-Install Visual Studio Code and the official PlatformIO IDE extension, then open
-the repository directory. PlatformIO reads `platformio.ini` automatically. Use
-an explicit environment when building or uploading; the default environment is
-ESP8266 DEVELOPMENT only for convenience.
+11. Confirm that the terminal named the intended environment and that the path
+    matches the target. Never interchange ESP8266 and ESP32 artifacts.
+12. Continue with the [Flashing Guide](FLASHING.md). An ESP32 application
+    `firmware.bin` alone is not a complete first-installation image; the guide
+    documents the required bootloader, partition table, `boot_app0` and offsets.
 
-### PlatformIO CLI
+PlatformIO's official documentation confirms that Core is built into the IDE
+and describes the environment switcher and per-environment Project Tasks:
+[PlatformIO IDE for VS Code](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
 
-Use PlatformIO's supported installer or an isolated environment. For example,
-where `pipx` is available:
+## 3. Obtain the source: Git clone or Download ZIP
 
-```sh
-pipx install platformio
-pio --version
-```
+### Git clone
 
-Do not bypass operating-system Python protections merely to install this
-project globally.
+Use a Git client or a terminal:
 
-## 3. Clone the repository
-
-```sh
+```text
 git clone https://github.com/zampro79/wspr_beacon.git
 cd wspr_beacon
 git status --short --branch
 ```
 
-Builds embed the selected profile, target and available Git source identity.
-For reproducible review artifacts, start from the intended clean commit.
+A clone includes `.git`, allowing the build to embed the current source commit.
+For reviewed artifacts, start from the intended clean commit.
 
-## 4. Pinned build configuration
+### Download ZIP
+
+On the GitHub repository page choose **Code → Download ZIP**, extract the archive
+and open the extracted folder that contains `platformio.ini`. Download ZIP is a
+valid method for a personal source build and does not require Git.
+
+GitHub ZIP archives do not contain `.git`. The build therefore records
+`source_commit: unknown` in the firmware identity and provenance file. This does
+not change the selected profile, scheduler, RF safety or firmware functionality.
+It only removes verifiable Git provenance, so the controlled public-release
+packaging path rejects such a build. `unknown` is not a toolchain error.
+
+## 4. Optional advanced path: standalone PlatformIO Core CLI
+
+Skip this section when using PlatformIO IDE's built-in terminal. For a standalone
+CLI, follow PlatformIO's current
+[Core installation guide](https://docs.platformio.org/en/latest/core/installation/index.html).
+The recommended installer creates an isolated Python environment; current
+PlatformIO documentation requires Python 3.9 or later. Homebrew is also an
+official macOS option. Avoid multiple Core installations and do not bypass
+operating-system Python protections.
+
+After `pio --version` succeeds, change to the directory containing
+`platformio.ini` and build one explicit PUBLIC environment:
+
+```text
+pio run -e esp8266_public
+pio run -e esp32_public
+```
+
+These commands are the same on Linux, Windows PowerShell/CMD and macOS once
+`pio` is available in that terminal. They are alternatives: build only the
+target you intend to use.
+
+The host-only test suites are optional developer checks, not prerequisites for
+building firmware:
+
+```text
+pio test -e native
+pio test -e native_public
+```
+
+## 5. Host-specific notes
+
+### Linux
+
+- Install VS Code and PlatformIO IDE as described in section 2.
+- PlatformIO IDE requires Python 3 virtual-environment support. Package names
+  vary by distribution; use its documented equivalent of `python3-venv`.
+- For standalone Core, use PlatformIO's isolated installer or another supported
+  method. Never run ordinary builds with `sudo`.
+- Serial groups, udev rules and USB drivers are upload concerns and are not
+  required to compile source.
+- A clean Fedora Linux build has been verified for both PUBLIC targets with
+  PlatformIO Core 6.1.19.
+
+### Windows 10/11
+
+- Use VS Code with PlatformIO IDE for the simplest setup. Git for Windows is
+  optional when using Download ZIP.
+- The PlatformIO IDE terminal already exposes its built-in `pio`. A separate
+  system-wide CLI is optional.
+- Do not install CP210x/CH340 drivers merely to compile; they matter only when
+  connecting a board.
+- If a standalone `pio` is not recognized, use the PlatformIO IDE terminal or
+  follow PlatformIO's shell-command/PATH instructions rather than copying Bash
+  profile commands into PowerShell or CMD.
+- **Windows host builds have not yet been validated directly by this project.**
+  This is a host-toolchain evidence gap, separate from hardware validation.
+
+### macOS Intel and Apple Silicon
+
+- Use VS Code with PlatformIO IDE, or optionally install standalone Core using
+  an officially supported method such as the isolated installer or Homebrew.
+- Both Git clone and Download ZIP follow sections 2 and 3; build the explicit
+  PUBLIC environment and use the same relative artifact paths.
+- **Neither macOS Intel nor macOS Apple Silicon has yet been validated with a
+  real project build.** General PlatformIO Core support for macOS does not prove
+  that every pinned Xtensa toolchain package is available for Apple Silicon.
+- Do not assume Rosetta is required or sufficient. If PlatformIO reports that a
+  pinned toolchain is unavailable for the host architecture, stop and preserve
+  the exact error for review rather than changing package versions.
+
+## 6. Pinned build configuration
 
 The authoritative configuration is
 [`platformio.ini`](https://github.com/zampro79/wspr_beacon/blob/main/platformio.ini).
@@ -85,9 +191,18 @@ The authoritative configuration is
 PlatformIO resolves framework, toolchain and transitive package versions from
 the pinned platforms. Technical packages record the resolved versions.
 
-## 5. Build and test
+The documented clean Fedora baseline used PlatformIO Core 6.1.19 and resolved
+the following target packages. These are recorded observations, not additional
+version overrides:
 
-Build all firmware profiles explicitly:
+| Target | Framework package | Toolchain package |
+| --- | --- | --- |
+| ESP8266 | `framework-arduinoespressif8266@3.30102.0` (Arduino core 3.1.2) | `toolchain-xtensa@2.100300.220621` (GCC 10.3.0) |
+| ESP32 | `framework-arduinoespressif32@4.20017.260907+sha.dcc1105b` (Arduino core 2.0.17) | `toolchain-xtensa-esp32@8.4.0+2021r2-patch5` |
+
+## 7. Build evidence and developer checks
+
+Developers can build all firmware profiles explicitly:
 
 ```sh
 pio run -e esp8266
@@ -104,7 +219,12 @@ pio test -e native_public
 ```
 
 The latest confirmed baseline is 559/559 passing cases in each native profile
-and successful builds for all four firmware environments.
+and successful builds for all four firmware environments. A clean Fedora Linux
+environment reproduced functional ESP8266 PUBLIC and ESP32 PUBLIC builds using
+PlatformIO Core 6.1.19. Windows, macOS Intel and macOS Apple Silicon builds have
+not been directly tested. Functional Linux reproducibility is verified;
+byte-for-byte reproducibility across clean builds or host systems is not
+demonstrated.
 
 Web assets are generated deterministically. Check them without rewriting:
 
@@ -118,7 +238,7 @@ Run the whitespace check before review:
 git diff --check
 ```
 
-## 6. Build outputs
+## 8. Build outputs
 
 Each environment has a separate `.pio/build/ENVIRONMENT/` directory. Relevant
 outputs include:
@@ -134,11 +254,22 @@ ESP32 builds additionally produce `bootloader.bin` and `partitions.bin`; the
 framework supplies `boot_app0.bin`. The Installation Guide lists the exact
 component offsets required for a first ESP32 installation.
 
+For the recommended profiles, the application binaries are exactly:
+
+```text
+.pio/build/esp8266_public/firmware.bin
+.pio/build/esp32_public/firmware.bin
+```
+
+These paths are relative to the project folder. ESP32 `firmware.bin` is the
+application component, not necessarily a complete first installation. Follow
+the [Flashing Guide](FLASHING.md) for the complete component set and offsets.
+
 `firmware.provenance.json` binds the project, development version, environment,
 profile, target and source commit to the SHA-256 values of the BIN, ELF and
 linker map. It is build evidence, not release authorization.
 
-## 7. Upload from source
+## 9. Upload from source
 
 Before upload, isolate CLK0 from any antenna or unverified RF chain and identify
 the actual serial port:
@@ -171,7 +302,37 @@ and remains only a build profile.
 Do not use `erase_flash` for an ordinary upload. Do not assume `/dev/ttyUSB0`
 or a fixed COM number. Close other serial monitors before uploading.
 
-## 8. Local technical packaging
+## 10. Build troubleshooting
+
+- **`pio` is not recognized:** in VS Code use the PlatformIO IDE terminal and
+  confirm that built-in Core is enabled. For standalone use, follow PlatformIO's
+  shell-command instructions instead of editing PATH blindly.
+- **Multiple PlatformIO Core installations:** keep the IDE's built-in Core or
+  one intentional standalone installation. Record `pio --version` and remove an
+  obsolete duplicate only through the method that installed it.
+- **Dependency download blocked:** confirm ordinary network access, available
+  disk space and whether a firewall, antivirus or corporate proxy blocked the
+  PlatformIO package host. Preserve the full error before retrying.
+- **Proxy required:** use the documented PlatformIO/VS Code proxy settings. Do
+  not publish proxy credentials or disable TLS verification without an approved
+  local policy.
+- **Python or virtual-environment error:** on Linux install the distribution's
+  Python 3 venv support; for standalone Core use PlatformIO's isolated installer.
+  Do not modify the system Python with privileged `pip` commands.
+- **Wrong project folder:** the opened/current directory must directly contain
+  this repository's `platformio.ini`.
+- **Wrong firmware environment:** stop if the terminal does not name exactly
+  `esp8266_public` or `esp32_public`; clean and rebuild the intended environment.
+- **Dependencies unresolved:** retry only after checking the network/proxy and
+  the pinned names in `platformio.ini`; do not silently substitute versions.
+- **Toolchain unavailable for the host architecture:** retain the package name,
+  version and complete error. Do not prescribe emulation or unpin the toolchain
+  without a separately reviewed compatibility decision.
+
+Official references: [PlatformIO troubleshooting](https://docs.platformio.org/en/latest/core/installation/troubleshooting.html)
+and [proxy configuration](https://docs.platformio.org/en/latest/core/installation/proxy-configuration.html).
+
+## 11. Local technical packaging
 
 Archive verified local technical packages for all four environments with:
 
@@ -251,7 +412,7 @@ correspondence verified only for a technically eligible clean package.
 See the [Flashing Guide](FLASHING.md), [ESP32 component inventory](ESP32_COMPONENT_INVENTORY.md)
 and [LGPL relinking notes](LGPL_RELINKING.md).
 
-## 9. Distribution restrictions
+## 12. Distribution restrictions
 
 Every current package must retain:
 
@@ -262,15 +423,17 @@ NOT_APPROVED_FOR_PUBLIC_DISTRIBUTION
 
 The unresolved LGPL relinking and GPLv3/ESP8266 NONOS SDK questions remain
 release blockers. ESP32 also lacks target-specific legal review and complete
-hardware/RF validation. Do not upload locally produced firmware to a public release, attach
-it to a Git tag or describe PUBLIC artifacts as downloadable firmware.
+hardware/RF validation. The current repository distribution model is
+source-only; locally built binaries remain private development artifacts. Do
+not upload them to a public release, attach them to a Git tag or describe PUBLIC
+artifacts as downloadable firmware.
 
 See the repository's
 [Source Distribution](https://github.com/zampro79/wspr_beacon/blob/main/docs/SOURCE_DISTRIBUTION.md),
 [ESP8266 license review](https://github.com/zampro79/wspr_beacon/blob/main/docs/ESP8266_LICENSE_REVIEW.md) and
 [third-party notices](https://github.com/zampro79/wspr_beacon/blob/main/THIRD_PARTY_NOTICES.md).
 
-## 10. Privacy before sharing diagnostics or commits
+## 13. Privacy before sharing diagnostics or commits
 
 Never commit Wi-Fi credentials, local configuration, session tokens, NVS or
 flash backups. Sanitize browser HAR files, screenshots and serial or diagnostic
